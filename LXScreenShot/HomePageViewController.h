@@ -1,15 +1,13 @@
 //
-//  ViewController.h
+//  HomePageViewController.h
 //  LXScreenShot
 //
 //  Created by Leexin on 16/4/8.
 //  Copyright © 2016年 Garden.Lee. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "LXViewController.h"
 
-@interface ViewController : UIViewController
-
+@interface HomePageViewController : LXViewController
 
 @end
-
