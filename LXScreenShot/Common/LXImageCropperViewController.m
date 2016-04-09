@@ -1,5 +1,5 @@
 //
-//  NWFImageCropperViewController.m
+//  LXImageCropperViewController.m
 //  LXScreenShot
 //
 //  Created by Leexin on 16/4/8.

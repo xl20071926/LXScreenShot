@@ -1,5 +1,5 @@
 //
-//  NWFImageCropperViewController.h
+//  LXImageCropperViewController.h
 //  LXScreenShot
 //
 //  Created by Leexin on 16/4/8.

@@ -1,5 +1,5 @@
 //
-//  NWFImagePickerControllerViewController.h
+//  LXImagePickerControllerViewController.h
 //  LXScreenShot
 //
 //  Created by Leexin on 16/4/8.
@@ -13,26 +13,26 @@ static const CGFloat kOverlayViewTop = 60.f; // 蒙层上端高度
 static const CGFloat kOverlayViewBroadsideWidth = 50.f; // 蒙层俩侧宽度
 static const CGFloat kIdentifyScale = 1.585; // 身份证的比例是1.585
 
-typedef NS_ENUM(NSInteger,NWFCameraOverlayViewType) {
-    NWFCameraOverlayViewTypeIdentify, // 身份证类型
-    NWFCameraOverlayViewTypeSquare, // 正方形类型
+typedef NS_ENUM(NSInteger,LXCameraOverlayViewType) {
+    LXCameraOverlayViewTypeIdentify, // 身份证类型
+    LXCameraOverlayViewTypeSquare, // 正方形类型
 };
 
 @class LXImagePickerControllerViewController;
-@protocol NWFImagePickerControllerViewControllerDelegate <NSObject>
+@protocol LXImagePickerControllerViewControllerDelegate <NSObject>
 
-- (void)nwfImagePickerControllerViewController:(LXImagePickerControllerViewController *)controller didFinishPickingImage:(UIImage *)image; // 完成
-- (void)nwfImagePickerControllerViewControllerDidCancel:(LXImagePickerControllerViewController *)controller; // 取消
+- (void)imagePickerControllerViewController:(LXImagePickerControllerViewController *)controller didFinishPickingImage:(UIImage *)image; // 完成
+- (void)imagePickerControllerViewControllerDidCancel:(LXImagePickerControllerViewController *)controller; // 取消
 
 @end
 
 @interface LXImagePickerControllerViewController : LXViewController
 
-@property (nonatomic, assign) NWFCameraOverlayViewType cameraType; // 相机蒙层类型
+@property (nonatomic, assign) LXCameraOverlayViewType cameraType; // 相机蒙层类型
 @property (nonatomic, assign) UIImagePickerControllerSourceType sourceType; // ImagePickerde 的类型
-@property (nonatomic, weak) id<NWFImagePickerControllerViewControllerDelegate> delegate;
+@property (nonatomic, weak) id<LXImagePickerControllerViewControllerDelegate> delegate;
 
-- (instancetype)initWithCameraType:(NWFCameraOverlayViewType)cameraType sourceType:(UIImagePickerControllerSourceType)sourceType;
+- (instancetype)initWithCameraType:(LXCameraOverlayViewType)cameraType sourceType:(UIImagePickerControllerSourceType)sourceType;
 - (void)showCameraController; // 弹出相机
 
 @end

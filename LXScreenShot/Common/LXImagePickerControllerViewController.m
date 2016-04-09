@@ -1,5 +1,5 @@
 //
-//  NWFImagePickerControllerViewController.m
+//  LXImagePickerControllerViewController.m
 //  LXScreenShot
 //
 //  Created by Leexin on 16/4/8.
@@ -39,7 +39,7 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 
 #pragma mark - Life Cycle
 
-- (instancetype)initWithOverlayViewType:(NWFCameraOverlayViewType)type {
+- (instancetype)initWithOverlayViewType:(LXCameraOverlayViewType)type {
     
     self = [super initWithFrame:[UIScreen mainScreen].bounds];
     if (self) {
@@ -49,9 +49,9 @@ static const CGFloat kAreaImageViewSpace = 5.f;
     return self;
 }
 
-- (void)initMaskViewWithType:(NWFCameraOverlayViewType)type {
+- (void)initMaskViewWithType:(LXCameraOverlayViewType)type {
     
-    if (NWFCameraOverlayViewTypeIdentify == type) { // 身份证
+    if (LXCameraOverlayViewTypeIdentify == type) { // 身份证
         CGFloat frameHeight = (SCREEN_WIDTH - 2 * kOverlayViewBroadsideWidth) * kIdentifyScale; // 框的高度
         CGFloat bottomHeight = SCREEN_HEIGHT - kOverlayViewTop - frameHeight;
         self.topMaskView.frame = CGRectMake(0, 0, SCREEN_WIDTH, kOverlayViewTop);
@@ -262,7 +262,7 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 
 #pragma mark - Life Cycle
 
-- (instancetype)initWithCameraType:(NWFCameraOverlayViewType)cameraType sourceType:(UIImagePickerControllerSourceType)sourceType {
+- (instancetype)initWithCameraType:(LXCameraOverlayViewType)cameraType sourceType:(UIImagePickerControllerSourceType)sourceType {
     
     self = [super init];
     if (self) {
@@ -309,8 +309,8 @@ static const CGFloat kAreaImageViewSpace = 5.f;
         __strong __typeof(weakSelf)strongSelf = weakSelf;
         if (image) {
             [strongSelf dismissViewControllerAnimated:YES completion:nil];
-            if ([strongSelf.delegate respondsToSelector:@selector(nwfImagePickerControllerViewController:didFinishPickingImage:)]) {
-                [strongSelf.delegate nwfImagePickerControllerViewController:strongSelf didFinishPickingImage:image];
+            if ([strongSelf.delegate respondsToSelector:@selector(imagePickerControllerViewController:didFinishPickingImage:)]) {
+                [strongSelf.delegate imagePickerControllerViewController:strongSelf didFinishPickingImage:image];
             }
         } else {
             [strongSelf dismissViewControllerAnimated:NO completion:^{
@@ -322,8 +322,8 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     
-    if ([self.delegate respondsToSelector:@selector(nwfImagePickerControllerViewControllerDidCancel:)]) {
-        [self.delegate nwfImagePickerControllerViewControllerDidCancel:self];
+    if ([self.delegate respondsToSelector:@selector(imagePickerControllerViewControllerDidCancel:)]) {
+        [self.delegate imagePickerControllerViewControllerDidCancel:self];
     }
 }
 
