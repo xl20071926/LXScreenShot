@@ -72,8 +72,8 @@ static const CGFloat kBottomSpace = 20.f;
     rotationButton.frame = CGRectMake(0, 0, 100.f, 20.f);
     rotationButton.left = (SCREEN_WIDTH - rotationButton.width) / 2;
     rotationButton.top = SCREEN_HEIGHT - kBottomSpace - 25.f;
-    [rotationButton setImage:[UIImage imageNamed:@"rotate_button_icon"] forState:UIControlStateNormal];
-    [rotationButton setImage:[UIImage imageNamed:@"rotate_press_button_icon"] forState:UIControlStateHighlighted];
+    [rotationButton setImage:[UIImage imageNamed:@"Rotate_button_icon"] forState:UIControlStateNormal];
+    [rotationButton setImage:[UIImage imageNamed:@"Rotate_press_button_icon"] forState:UIControlStateHighlighted];
     [rotationButton addTarget:self action:@selector(onRotationButtonClickM_PI) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:rotationButton];
     

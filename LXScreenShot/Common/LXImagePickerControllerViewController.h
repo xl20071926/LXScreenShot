@@ -14,6 +14,7 @@ static const CGFloat kOverlayViewBroadsideWidth = 50.f; // 蒙层俩侧宽度
 static const CGFloat kIdentifyScale = 1.585; // 身份证的比例是1.585
 
 typedef NS_ENUM(NSInteger,LXCameraOverlayViewType) {
+    LXCameraOverlayViewTypeDefault, // 系统默认类型
     LXCameraOverlayViewTypeIdentify, // 身份证类型
     LXCameraOverlayViewTypeSquare, // 正方形类型
 };
@@ -32,7 +33,7 @@ typedef NS_ENUM(NSInteger,LXCameraOverlayViewType) {
 @property (nonatomic, assign) UIImagePickerControllerSourceType sourceType; // ImagePickerde 的类型
 @property (nonatomic, weak) id<LXImagePickerControllerViewControllerDelegate> delegate;
 
-- (instancetype)initWithCameraType:(LXCameraOverlayViewType)cameraType sourceType:(UIImagePickerControllerSourceType)sourceType;
+- (instancetype)initWithController:(UIViewController *)control sourceType:(UIImagePickerControllerSourceType)sourceType cameraType:(LXCameraOverlayViewType)cameraType;
 - (void)showCameraController; // 弹出相机
 
 @end

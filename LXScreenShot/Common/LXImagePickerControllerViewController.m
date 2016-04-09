@@ -84,8 +84,8 @@ static const CGFloat kAreaImageViewSpace = 5.f;
     
     self.flashButton.frame = CGRectMake(kOverlayViewSpace, kOverlayViewSpace, 30.f, 30.f);
     [self.topMaskView addSubview:self.flashButton];
-//    self.deviceButton.frame = CGRectMake(SCREEN_WIDTH - 30.f - kOverlayViewSpace, kOverlayViewSpace, 30.f, 30.f);
-//    [self.topMaskView addSubview:self.deviceButton];
+    self.deviceButton.frame = CGRectMake(SCREEN_WIDTH - 30.f - kOverlayViewSpace, kOverlayViewSpace, 30.f, 30.f);
+    [self.topMaskView addSubview:self.deviceButton];
     
     self.cancelButton.frame = CGRectMake(kOverlayViewSpace, (self.bottomMaskView.height - 30.f) / 2, 60.f, 30.f);
     [self.bottomMaskView addSubview:self.cancelButton];
@@ -97,7 +97,7 @@ static const CGFloat kAreaImageViewSpace = 5.f;
     
     [super layoutSubviews];
     self.flashButton.selected = NO;
-//    self.deviceButton.selected = NO;
+    self.deviceButton.selected = NO;
 }
 
 #pragma mark - Event Response
@@ -138,9 +138,9 @@ static const CGFloat kAreaImageViewSpace = 5.f;
     
     if (!_flashButton) {
         _flashButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_flashButton setImage:[UIImage imageNamed:@"photo_flash_icon"] forState:UIControlStateNormal];
-        [_flashButton setImage:[UIImage imageNamed:@"photo_flash_press_icon"] forState:UIControlStateHighlighted];
-        [_flashButton setImage:[UIImage imageNamed:@"photo_flash_press_icon"] forState:UIControlStateSelected];
+        [_flashButton setImage:[UIImage imageNamed:@"Photo_flash_icon"] forState:UIControlStateNormal];
+        [_flashButton setImage:[UIImage imageNamed:@"Photo_flash_press_icon"] forState:UIControlStateHighlighted];
+        [_flashButton setImage:[UIImage imageNamed:@"Photo_flash_press_icon"] forState:UIControlStateSelected];
         [_flashButton addTarget:self action:@selector(onFlashButtonClick) forControlEvents:UIControlEventTouchUpInside];
     }
     return _flashButton;
@@ -150,9 +150,9 @@ static const CGFloat kAreaImageViewSpace = 5.f;
     
     if (!_deviceButton) {
         _deviceButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_deviceButton setImage:[UIImage imageNamed:@"reversion_icon"] forState:UIControlStateNormal];
-        [_deviceButton setImage:[UIImage imageNamed:@"reversion_press_icon"] forState:UIControlStateHighlighted];
-        [_deviceButton setImage:[UIImage imageNamed:@"reversion_press_icon"] forState:UIControlStateSelected];
+        [_deviceButton setImage:[UIImage imageNamed:@"Reversion_icon"] forState:UIControlStateNormal];
+        [_deviceButton setImage:[UIImage imageNamed:@"Reversion_press_icon"] forState:UIControlStateHighlighted];
+        [_deviceButton setImage:[UIImage imageNamed:@"Reversion_press_icon"] forState:UIControlStateSelected];
         [_deviceButton addTarget:self action:@selector(onDeviceButtonClick) forControlEvents:UIControlEventTouchUpInside];
     }
     return _deviceButton;
@@ -174,8 +174,8 @@ static const CGFloat kAreaImageViewSpace = 5.f;
     
     if (!_takePhotoButton) {
         _takePhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_takePhotoButton setImage:[UIImage imageNamed:@"camera_button_icon"] forState:UIControlStateNormal];
-        [_takePhotoButton setImage:[UIImage imageNamed:@"camera_button_press_icon"] forState:UIControlStateHighlighted];
+        [_takePhotoButton setImage:[UIImage imageNamed:@"Camera_button_icon"] forState:UIControlStateNormal];
+        [_takePhotoButton setImage:[UIImage imageNamed:@"Camera_button_press_icon"] forState:UIControlStateHighlighted];
         [_takePhotoButton addTarget:self action:@selector(onTakePhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
     }
     return _takePhotoButton;
@@ -220,7 +220,7 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 - (UIImageView *)areaImageViewTopLeft {
     
     if (!_areaImageViewTopLeft) {
-        _areaImageViewTopLeft = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"camera_area_icon"]];
+        _areaImageViewTopLeft = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Camera_area_icon"]];
     }
     return _areaImageViewTopLeft;
 }
@@ -228,7 +228,7 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 - (UIImageView *)areaImageViewTopRight {
     
     if (!_areaImageViewTopRight) {
-        _areaImageViewTopRight = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"camera_area_icon"]];
+        _areaImageViewTopRight = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Camera_area_icon"]];
     }
     return _areaImageViewTopRight;
 }
@@ -236,7 +236,7 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 - (UIImageView *)areaImageViewBottomLeft {
     
     if (!_areaImageViewBottomLeft) {
-        _areaImageViewBottomLeft = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"camera_area_icon"]];
+        _areaImageViewBottomLeft = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Camera_area_icon"]];
     }
     return _areaImageViewBottomLeft;
 }
@@ -244,7 +244,7 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 - (UIImageView *)areaImageViewBottomRight {
     
     if (!_areaImageViewBottomRight) {
-        _areaImageViewBottomRight = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"camera_area_icon"]];
+        _areaImageViewBottomRight = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Camera_area_icon"]];
     }
     return _areaImageViewBottomRight;
 }
@@ -255,6 +255,7 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 @interface LXImagePickerControllerViewController () <UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 
 @property (nonatomic, strong) UIImagePickerController *pickerController;
+@property (nonatomic, weak) UIViewController *presentViewController;
 
 @end
 
@@ -262,21 +263,16 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 
 #pragma mark - Life Cycle
 
-- (instancetype)initWithCameraType:(LXCameraOverlayViewType)cameraType sourceType:(UIImagePickerControllerSourceType)sourceType {
+- (instancetype)initWithController:(UIViewController *)control sourceType:(UIImagePickerControllerSourceType)sourceType cameraType:(LXCameraOverlayViewType)cameraType {
     
     self = [super init];
     if (self) {
-        if (sourceType < 0) {
-            self.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-        }
-        if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
-            self.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-        }
         self.sourceType = sourceType;
         self.cameraType = cameraType;
         self.pickerController = [[UIImagePickerController alloc] init];
         self.pickerController.delegate = self;
         self.pickerController.sourceType = self.sourceType;
+        self.presentViewController = control;
     }
     return self;
 }
@@ -286,12 +282,14 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 - (void)showCameraController {
     
     if (UIImagePickerControllerSourceTypeCamera == self.pickerController.sourceType) {
-        LXCameraOverlayView *overlayView = [[LXCameraOverlayView alloc] initWithOverlayViewType:self.cameraType];
-        overlayView.imagePickerController = self.pickerController;
-        self.pickerController.cameraOverlayView = overlayView;
-        self.pickerController.showsCameraControls = NO;
+        if (self.cameraType) {
+            LXCameraOverlayView *overlayView = [[LXCameraOverlayView alloc] initWithOverlayViewType:self.cameraType];
+            overlayView.imagePickerController = self.pickerController;
+            self.pickerController.cameraOverlayView = overlayView;
+            self.pickerController.showsCameraControls = NO;
+        }
     }
-    [self presentViewController:self.pickerController animated:YES completion:nil];
+    [self.presentViewController presentViewController:self.pickerController animated:YES completion:nil];
 }
 
 #pragma mark - UIImagePickerControllerDelegate
