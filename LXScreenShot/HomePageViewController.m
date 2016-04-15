@@ -11,7 +11,7 @@
 
 static const CGFloat kViewSpace = 20.f;
 
-@interface HomePageViewController ()
+@interface HomePageViewController () <LXImagePickerControllerViewControllerDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 
 @property (nonatomic, strong) UIImageView *backgroundImageView;
 @property (nonatomic, strong) UIButton *selectPictureButton;
@@ -60,9 +60,26 @@ static const CGFloat kViewSpace = 20.f;
 }
 
 - (void)showImagePickerControllerWithSourceType:(UIImagePickerControllerSourceType)sourceType cameraType:(LXCameraOverlayViewType)cameraType {
-    
-    LXImagePickerControllerViewController *imagePickerController = [[LXImagePickerControllerViewController alloc] initWithController:self sourceType:sourceType cameraType:cameraType];
+
+    LXImagePickerControllerViewController *imagePickerController = [[LXImagePickerControllerViewController alloc] initWithController:self
+                                                                                                                          sourceType:sourceType
+                                                                                                                          cameraType:cameraType];
+    imagePickerController.delegate = self;
     [imagePickerController showCameraController];
+}
+
+#pragma mark - LXImagePickerControllerViewControllerDelegate
+
+- (void)imagePickerControllerViewController:(LXImagePickerControllerViewController *)controller didFinishPickingImage:(UIImage *)image {
+    
+    [self.navigationController popViewControllerAnimated:NO];
+    NSLog(@"didFinishPickingImage");
+}
+
+- (void)imagePickerControllerViewControllerDidCancel:(LXImagePickerControllerViewController *)controller {
+    
+    [self.navigationController popViewControllerAnimated:NO];
+    NSLog(@"imagePickerControllerViewControllerDidCancel");
 }
 
 #pragma mark - Event Response

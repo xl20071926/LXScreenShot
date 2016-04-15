@@ -252,16 +252,21 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 @end
 
 
-@interface LXImagePickerControllerViewController () <UIImagePickerControllerDelegate,UINavigationControllerDelegate>
+@interface LXImagePickerControllerViewController ()
 
 @property (nonatomic, strong) UIImagePickerController *pickerController;
-@property (nonatomic, weak) UIViewController *presentViewController;
+@property (nonatomic, strong) UIViewController *presentViewController;
 
 @end
 
 @implementation LXImagePickerControllerViewController
 
 #pragma mark - Life Cycle
+
+- (void)dealloc {
+
+    NSLog(@"dealloc");
+}
 
 - (instancetype)initWithController:(UIViewController *)control sourceType:(UIImagePickerControllerSourceType)sourceType cameraType:(LXCameraOverlayViewType)cameraType {
     
@@ -277,10 +282,18 @@ static const CGFloat kAreaImageViewSpace = 5.f;
     return self;
 }
 
+- (void)viewDidLoad {
+
+    [super viewDidLoad];
+    [self showCameraController];
+}
+
 #pragma mark - Public Method
 
 - (void)showCameraController {
     
+    __weak typeof(self)weakSelf = self;
+    [self.presentViewController addChildViewController:weakSelf];
     if (UIImagePickerControllerSourceTypeCamera == self.pickerController.sourceType) {
         if (self.cameraType) {
             LXCameraOverlayView *overlayView = [[LXCameraOverlayView alloc] initWithOverlayViewType:self.cameraType];
@@ -289,7 +302,8 @@ static const CGFloat kAreaImageViewSpace = 5.f;
             self.pickerController.showsCameraControls = NO;
         }
     }
-    [self.presentViewController presentViewController:self.pickerController animated:YES completion:nil];
+    [self.presentViewController presentViewController:self.pickerController animated:YES completion:^{
+    }];
 }
 
 #pragma mark - UIImagePickerControllerDelegate
@@ -300,19 +314,20 @@ static const CGFloat kAreaImageViewSpace = 5.f;
     }];
     UIImage *image = [info valueForKey:UIImagePickerControllerOriginalImage];
     LXImageCropperViewController *imageCropperViewController = [[LXImageCropperViewController alloc] initWithOriginalImage:image];
-    [self presentViewController:imageCropperViewController animated:YES completion:nil];
-    
+    [self.presentViewController presentViewController:imageCropperViewController animated:YES completion:nil];
     __weak typeof(self)weakSelf = self;
     imageCropperViewController.completionHandler = ^(UIImage *image) {
         __strong __typeof(weakSelf)strongSelf = weakSelf;
         if (image) {
-            [strongSelf dismissViewControllerAnimated:YES completion:nil];
+            [strongSelf dismissViewControllerAnimated:YES completion:^{
+                [strongSelf removeFromParentViewController];
+            }];
             if ([strongSelf.delegate respondsToSelector:@selector(imagePickerControllerViewController:didFinishPickingImage:)]) {
                 [strongSelf.delegate imagePickerControllerViewController:strongSelf didFinishPickingImage:image];
             }
         } else {
             [strongSelf dismissViewControllerAnimated:NO completion:^{
-                [strongSelf presentViewController:strongSelf.pickerController animated:YES completion:nil];
+                [strongSelf removeFromParentViewController];
             }];
         }
     };
@@ -320,6 +335,10 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     
+     __weak typeof(self)weakSelf = self;
+    [self dismissViewControllerAnimated:YES completion:^{
+        [weakSelf removeFromParentViewController];
+    }];
     if ([self.delegate respondsToSelector:@selector(imagePickerControllerViewControllerDidCancel:)]) {
         [self.delegate imagePickerControllerViewControllerDidCancel:self];
     }

@@ -27,13 +27,13 @@ typedef NS_ENUM(NSInteger,LXCameraOverlayViewType) {
 
 @end
 
-@interface LXImagePickerControllerViewController : LXViewController
+@interface LXImagePickerControllerViewController : LXViewController <UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 
 @property (nonatomic, assign) LXCameraOverlayViewType cameraType; // 相机蒙层类型
 @property (nonatomic, assign) UIImagePickerControllerSourceType sourceType; // ImagePickerde 的类型
 @property (nonatomic, weak) id<LXImagePickerControllerViewControllerDelegate> delegate;
 
 - (instancetype)initWithController:(UIViewController *)control sourceType:(UIImagePickerControllerSourceType)sourceType cameraType:(LXCameraOverlayViewType)cameraType;
-- (void)showCameraController; // 弹出相机
+- (void)showCameraController;
 
 @end
