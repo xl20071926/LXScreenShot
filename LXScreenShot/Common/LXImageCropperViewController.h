@@ -10,8 +10,9 @@
 
 @interface LXImageCropperViewController : LXViewController
 
-@property (nonatomic, copy) void (^completionHandler)(UIImage *image); // 完成/取消block,取消传nil
+@property (nonatomic, copy) void (^completionHandler)(UIImage *image);
+@property (nonatomic, retain) UIImageView *imageView;
 
-- (id)initWithOriginalImage:(UIImage *)image;
+- (id)initWithOriginalImage:(UIImage *)image cropWidth:(float)width cropHeight:(float)vheight;
 
 @end

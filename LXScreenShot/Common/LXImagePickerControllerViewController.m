@@ -313,7 +313,7 @@ static const CGFloat kAreaImageViewSpace = 5.f;
     [self dismissViewControllerAnimated:NO completion:^{
     }];
     UIImage *image = [info valueForKey:UIImagePickerControllerOriginalImage];
-    LXImageCropperViewController *imageCropperViewController = [[LXImageCropperViewController alloc] initWithOriginalImage:image];
+    LXImageCropperViewController *imageCropperViewController = [[LXImageCropperViewController alloc] initWithOriginalImage:image cropWidth:SCREEN_WIDTH cropHeight:SCREEN_WIDTH];
     [self.presentViewController presentViewController:imageCropperViewController animated:YES completion:nil];
     __weak typeof(self)weakSelf = self;
     imageCropperViewController.completionHandler = ^(UIImage *image) {

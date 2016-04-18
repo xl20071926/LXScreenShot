@@ -8,129 +8,187 @@
 
 #import "LXImageCropperViewController.h"
 #import "LXImagePickerControllerViewController.h"
+#import "LXToolView.h"
 
 static const CGFloat kBottomSpace = 20.f;
+static const CGFloat kCommonViewSpace = 10.f;
 
-@interface LXImageCropperViewController ()
+@interface LXImageCropperViewController () <UIScrollViewDelegate,LXToolViewDelegate>
+{
+    float cropWidth, cropHeight;
+}
 
-@property (nonatomic, retain) UIImageView *imageView;
-@property (nonatomic, strong) UIImage *originalImage;
-@property (nonatomic, assign) CGFloat originalImageScale; // 原图宽高比例
-@property (nonatomic, assign) CGFloat originScreenImageScale; // 图片和屏幕的比例
-@property (nonatomic, assign) CGFloat screenSpace;
+@property (nonatomic, retain) UIScrollView *scrollView;
+@property (nonatomic, retain) UIImage *originalImage;
+@property (nonatomic, strong) UIButton *rotationButton;
+@property (nonatomic, strong) UIButton *cancelButton;
+@property (nonatomic, strong) UIButton *doneButton;
+@property (nonatomic, strong) LXToolView *toolView;
+// 蒙层
+@property (nonatomic, strong) UIView *topMaskView;
+@property (nonatomic, strong) UIView *leftMaskView;
+@property (nonatomic, strong) UIView *centerMaskView;
+@property (nonatomic, strong) UIView *rightMaskView;
+@property (nonatomic, strong) UIView *bottomMaskView;
 
 @end
 
+
 @implementation LXImageCropperViewController
 
-#pragma mark - Life Cycle
-
 - (void)dealloc {
-
+    
+    self.scrollView = nil;
     self.originalImage = nil;
     self.imageView = nil;
+    self.completionHandler = nil;
 }
 
-- (id)initWithOriginalImage:(UIImage *)image {
+- (id)initWithOriginalImage:(UIImage *)image cropWidth:(float)width cropHeight:(float)height {
     
     self = [super init];
     if (self) {
         self.originalImage = image;
-        
-        float width = self.originalImage.size.width;
-        float height = self.originalImage.size.height;
-        
-        if (IS_IPHONE_4_OR_LESS) { //iphone4 拍出的图片屏幕宽度的俩边各会自动多出10的间隙
-            self.screenSpace = 10.f;
-        } else {
-            self.screenSpace = 0;
-        }
-        if (width > height) { // 拍出来的是横图
-            self.originalImageScale = self.originalImage.size.width / self.originalImage.size.height;
-            self.originScreenImageScale = self.originalImage.size.height / (SCREEN_WIDTH + 2 * self.screenSpace);
-        } else { // 拍出来的是竖直图,需要手动调整调整
-            self.originalImageScale = self.originalImage.size.height / self.originalImage.size.width;
-            self.originScreenImageScale = self.originalImage.size.width / (SCREEN_WIDTH + 2 * self.screenSpace);
-        }
+        cropWidth = width;
+        cropHeight = height;
     }
     return self;
 }
+
+#pragma mark - View lifecycle
 
 - (void)viewDidLoad {
     
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor blackColor];
-    
+    [self initSubViews];
     [self resetImageView];
-    [self onRotationButtonClick];
-    [self initBarButton];
 }
 
-- (void)initBarButton {
+- (void)initSubViews {
     
-    UIButton *rotationButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    rotationButton.frame = CGRectMake(0, 0, 100.f, 20.f);
-    rotationButton.left = (SCREEN_WIDTH - rotationButton.width) / 2;
-    rotationButton.top = SCREEN_HEIGHT - kBottomSpace - 25.f;
-    [rotationButton setImage:[UIImage imageNamed:@"Rotate_button_icon"] forState:UIControlStateNormal];
-    [rotationButton setImage:[UIImage imageNamed:@"Rotate_press_button_icon"] forState:UIControlStateHighlighted];
-    [rotationButton addTarget:self action:@selector(onRotationButtonClickM_PI) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:rotationButton];
+    [self initScrollView];
+    [self initMaskView];
     
-    UIButton *rePhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    rePhotoButton.frame = CGRectMake(0, 0, 80.f, 30.f);
-    rePhotoButton.left = kBottomSpace;
-    rePhotoButton.top = SCREEN_HEIGHT - kBottomSpace - rePhotoButton.height;
-    [rePhotoButton setTitle:@"重拍" forState:UIControlStateNormal];
-    [rePhotoButton addTarget:self action:@selector(onRePhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:rePhotoButton];
+    self.rotationButton.frame = CGRectMake(0, 0, 80, 50);
+    self.rotationButton.left = (self.view.width - self.rotationButton.width) / 2;
+    self.rotationButton.top = SCREEN_HEIGHT - self.rotationButton.height;
+    [self.view addSubview:self.rotationButton];
     
-    UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    doneButton.frame = rePhotoButton.frame;
-    doneButton.left = (SCREEN_WIDTH - kBottomSpace - doneButton.width);
-    [doneButton setTitle:@"使用照片" forState:UIControlStateNormal];
-    [doneButton addTarget:self action:@selector(onDoneButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:doneButton];
+    self.cancelButton.frame = CGRectMake(0, 20, 80.f, 30.f);
+    self.cancelButton.left = kBottomSpace;
+    [self.view addSubview:self.cancelButton];
+    
+    self.doneButton.frame = self.cancelButton.frame;
+    self.doneButton.left = (SCREEN_WIDTH - kBottomSpace - self.doneButton.width);
+    [self.view addSubview:self.doneButton];
+    
+    self.toolView.left = 0;
+    self.toolView.top = self.bottomMaskView.top + kCommonViewSpace;
+    [self.view addSubview:self.toolView];
 }
 
-#pragma mark - Private Methods
+- (void)initMaskView {
+    
+    self.topMaskView.frame = CGRectMake(0, 0, self.scrollView.frame.size.width, (self.scrollView.frame.size.height - cropHeight) / 2);
+    [self.view addSubview:self.topMaskView];
+    
+    self.leftMaskView.frame = CGRectMake(0, self.topMaskView.origin.y + self.topMaskView.size.height, (self.scrollView.frame.size.width - cropWidth) / 2, cropHeight);
+    [self.view addSubview:self.leftMaskView];
+    
+    self.centerMaskView.frame = CGRectMake(self.leftMaskView.origin.x + self.leftMaskView.size.width, self.leftMaskView.origin.y, cropWidth, cropHeight);;
+    [self.view addSubview:self.centerMaskView];
+    
+    self.rightMaskView.frame = CGRectMake(self.centerMaskView.origin.x + self.centerMaskView.size.width, self.centerMaskView.origin.y, (self.scrollView.frame.size.width - cropWidth) / 2, cropHeight);
+    [self.view addSubview:self.rightMaskView];
+    
+    self.bottomMaskView.frame = CGRectMake(0, self.rightMaskView.origin.y + self.rightMaskView.size.height, self.scrollView.frame.size.width, (self.scrollView.frame.size.height - cropHeight) / 2);
+    [self.view addSubview:self.bottomMaskView];
+}
+
+- (void)initScrollView {
+    
+    self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+    self.scrollView.showsHorizontalScrollIndicator = NO;
+    self.scrollView.showsVerticalScrollIndicator = NO;
+    self.scrollView.delegate = self;
+    self.scrollView.backgroundColor = [UIColor blackColor];
+    
+    UIEdgeInsets edgeInsets;
+    edgeInsets.top = (self.scrollView.frame.size.height - cropHeight) / 2;
+    edgeInsets.left = (self.scrollView.frame.size.width - cropWidth) / 2;
+    edgeInsets.right = edgeInsets.left;
+    edgeInsets.bottom = edgeInsets.top;
+    self.scrollView.contentInset = edgeInsets;
+    self.scrollView.scrollIndicatorInsets = edgeInsets;
+    
+    float maxZoomScale = self.originalImage.size.width / cropWidth;
+    if (maxZoomScale < 3) {
+        maxZoomScale = 3;
+    }
+    [self.scrollView setMaximumZoomScale:maxZoomScale];
+    [self.scrollView setMinimumZoomScale:1];
+    [self.scrollView setZoomScale:maxZoomScale];
+    [self.scrollView setZoomScale:1];
+    
+    [self.view addSubview:self.scrollView];
+}
+
+#pragma mark - Custom Methods
 
 - (void)resetImageView {
     
+    self.scrollView.zoomScale = 1;
+    
     if (nil == self.originalImage) return;
-    if (!self.imageView) {
-        self.imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, self.view.height)];
-        self.imageView.contentMode = UIViewContentModeScaleAspectFit;
-        [self.view addSubview:self.imageView];
+    self.navigationItem.rightBarButtonItem.enabled = YES;
+    float width = self.originalImage.size.width;
+    float height = self.originalImage.size.height;
+    CGSize size;
+    if (width / height > cropWidth / cropHeight) {
+        size.height = cropHeight;
+        size.width = width / height * size.height;
+    } else {
+        size.width = cropWidth;
+        size.height = height / width * size.width;
     }
+    
+    self.scrollView.contentSize = size;
+    
+    [self.imageView removeFromSuperview];
+    self.imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, size.width, size.height)];
     self.imageView.image = self.originalImage;
+    [self.scrollView addSubview:self.imageView];
+    
+    [self.scrollView scrollRectToVisible:CGRectMake((self.imageView.frame.size.width - cropWidth) / 2, (self.imageView.frame.size.height - cropHeight) / 2, cropWidth, cropHeight) animated:NO];
 }
 
-- (void)cropImage { // 剪切图片
-    CGRect rect;
-    // iphone 拍出的图片比例是4/3 ，身份证比例是1.585
-    // 获取蒙层框的尺寸
-    rect = CGRectMake(kOverlayViewTop,
-                      kOverlayViewBroadsideWidth + self.screenSpace,
-                      (SCREEN_WIDTH - 2 * kOverlayViewBroadsideWidth) * kIdentifyScale,
-                      SCREEN_WIDTH - 2 * kOverlayViewBroadsideWidth);
-  
-    // 根据图/屏宽比例 转换成图片的框内尺寸
-    rect.origin.x = rect.origin.x * self.originScreenImageScale;
-    rect.origin.y = rect.origin.y * self.originScreenImageScale;
-    rect.size.width = rect.size.width * self.originScreenImageScale;
-    rect.size.height = rect.size.height * self.originScreenImageScale;
+- (void)cropImage {
     
-    UIImage *sourceImage = [self rotateImage:self.originalImage orientation:self.imageView.image.imageOrientation]; 
+    CGRect rect;
+    rect.origin.x = self.scrollView.contentInset.left + self.scrollView.contentOffset.x;
+    rect.origin.y = self.scrollView.contentInset.top + self.scrollView.contentOffset.y;
+    rect.size = CGSizeMake(cropWidth, cropHeight);
+    
+    float scale = self.originalImage.size.width / self.scrollView.contentSize.width;
+    
+    rect.origin.x = rect.origin.x * scale;
+    rect.origin.y = rect.origin.y * scale;
+    rect.size.width = rect.size.width * scale;
+    rect.size.height = rect.size.height * scale;
+    
+    UIImage *sourceImage = [self rotateImage:self.originalImage orientation:self.imageView.image.imageOrientation];
     
     CGImageRef imageRef = CGImageCreateWithImageInRect(sourceImage.CGImage, rect);
     UIImage *cropImage = [UIImage imageWithCGImage:imageRef];
-    self.originalImage = cropImage;
-    self.imageView.image = cropImage;
     CGImageRelease(imageRef);
+    
+    UIImageWriteToSavedPhotosAlbum(cropImage, nil, nil, nil);
+    
+    self.completionHandler(cropImage);
 }
 
-- (UIImage *)rotateImage:(UIImage *)aImage orientation:(UIImageOrientation)orient { // 调整图片的方向
+- (UIImage *)rotateImage:(UIImage *)aImage orientation:(UIImageOrientation)orient {
     
     CGImageRef imgRef = aImage.CGImage;
     CGFloat width = CGImageGetWidth(imgRef);
@@ -139,6 +197,7 @@ static const CGFloat kBottomSpace = 20.f;
     CGRect bounds = CGRectMake(0, 0, width, height);
     CGFloat scaleRatio = 1;
     CGFloat boundHeight;
+    
     switch (orient) {
         case UIImageOrientationUp: //EXIF = 1
             transform = CGAffineTransformIdentity;
@@ -183,9 +242,9 @@ static const CGFloat kBottomSpace = 20.f;
             bounds.size.width = boundHeight;
             transform = CGAffineTransformMakeTranslation(height, 0.0);
             transform = CGAffineTransformRotate(transform, M_PI / 2.0);
-            
             break;
     }
+    
     UIGraphicsBeginImageContext(bounds.size);
     CGContextRef context = UIGraphicsGetCurrentContext();
     
@@ -201,60 +260,164 @@ static const CGFloat kBottomSpace = 20.f;
     CGContextDrawImage(UIGraphicsGetCurrentContext(), CGRectMake(0, 0, width, height), imgRef);
     UIImage *imageCopy = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
+    
     return imageCopy;
 }
 
-#pragma mark - Event Response
-
-- (void)onRotationButtonClick { // 旋转90度
-    
-    UIImage *rotationImage = self.originalImage;
-    switch (self.imageView.image.imageOrientation) {
-        case UIImageOrientationRight:
-            rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationUp];
-            break;
-        case UIImageOrientationLeft:
-            rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationDown];
-            break;
-        default:
-            break;
-    }
-    self.originalImage = rotationImage;
-    [self resetImageView];
-    [self cropImage];
-}
-
-- (void)onRotationButtonClickM_PI { // 旋转180度
+- (void)onRotationButtonClick {
     
     UIImage *rotationImage;
     switch (self.imageView.image.imageOrientation) {
         case UIImageOrientationUp:
-            rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationDown];
+            rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationRight];
+            
             break;
         case UIImageOrientationRight:
-            rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationUp];
+            rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationDown];
             break;
         case UIImageOrientationDown:
-            rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationUp];
+            rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationLeft];
             break;
         case UIImageOrientationLeft:
-            rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationDown];
+            rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationUp];
             break;
         default:
             break;
     }
+    
     self.originalImage = rotationImage;
-    self.imageView.image = self.originalImage;
+    [self resetImageView];
 }
 
-- (void)onRePhotoButtonClick { // 重拍
+#pragma mark - UIScrollViewDelegate
+
+- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
+    
+    return self.imageView;
+}
+
+#pragma mark - LXToolViewDelegate
+
+- (void)toolView:(LXToolView *)toolView didClickToolButton:(UIButton *)toolButton {
+    
+    self.scrollView.userInteractionEnabled = !toolButton.selected;
+
+    if (toolButton.selected) {
+        
+        
+    }
+}
+
+#pragma mark - Event Response
+
+- (void)onCancelButtonClick {
     
     self.completionHandler(nil);
 }
 
-- (void)onDoneButtonClick { // 完成
+- (void)onDoneButtonClick {
     
-    self.completionHandler(self.originalImage);
+    [self cropImage];
+}
+
+#pragma mark - Getters
+
+- (UIButton *)rotationButton {
+    
+    if (!_rotationButton) {
+        _rotationButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [_rotationButton setTitle:@"旋转" forState:UIControlStateNormal];
+        [_rotationButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [_rotationButton addTarget:self action:@selector(onRotationButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _rotationButton;
+}
+
+- (UIButton *)cancelButton {
+    
+    if (!_cancelButton) {
+        _cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [_cancelButton setTitle:@"取消" forState:UIControlStateNormal];
+        [_cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [_cancelButton addTarget:self action:@selector(onCancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _cancelButton;
+}
+
+- (UIButton *)doneButton {
+    
+    if (!_doneButton) {
+        _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [_doneButton setTitle:@"使用照片" forState:UIControlStateNormal];
+        [_doneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [_doneButton addTarget:self action:@selector(onDoneButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _doneButton;
+}
+
+- (LXToolView *)toolView {
+    
+    if (!_toolView) {
+        _toolView = [[LXToolView alloc] init];
+        _toolView.delegate = self;
+    }
+    return _toolView;
+}
+
+- (UIView *)topMaskView {
+    
+    if (!_topMaskView) {
+        _topMaskView = [[UIView alloc] init];
+        _topMaskView.backgroundColor = [UIColor blackColor];
+        _topMaskView.alpha = 0.5;
+        _topMaskView.userInteractionEnabled = NO;
+    }
+    return _topMaskView;
+}
+
+- (UIView *)leftMaskView {
+    
+    if (!_leftMaskView) {
+        _leftMaskView = [[UIView alloc] init];
+        _leftMaskView.backgroundColor = [UIColor blackColor];
+        _leftMaskView.alpha = 0.5;
+        _leftMaskView.userInteractionEnabled = NO;
+    }
+    return _leftMaskView;
+}
+
+- (UIView *)centerMaskView {
+    
+    if (!_centerMaskView) {
+        _centerMaskView = [[UIView alloc] init];
+        _centerMaskView.backgroundColor = [UIColor clearColor];
+        _centerMaskView.layer.borderColor = [UIColor grayColor].CGColor;
+        _centerMaskView.layer.borderWidth = 1 / [UIScreen mainScreen].scale;
+        _centerMaskView.userInteractionEnabled = NO;
+    }
+    return _centerMaskView;
+}
+
+- (UIView *)rightMaskView {
+    
+    if (!_rightMaskView) {
+        _rightMaskView = [[UIView alloc] init];
+        _rightMaskView.backgroundColor = [UIColor blackColor];
+        _rightMaskView.alpha = 0.5;
+        _rightMaskView.userInteractionEnabled = NO;
+    }
+    return _rightMaskView;
+}
+
+- (UIView *)bottomMaskView {
+    
+    if (!_bottomMaskView) {
+        _bottomMaskView = [[UIView alloc] init];
+        _bottomMaskView.backgroundColor = [UIColor blackColor];
+        _bottomMaskView.alpha = 0.5;
+        _bottomMaskView.userInteractionEnabled = NO;
+    }
+    return _bottomMaskView;
 }
 
 @end
