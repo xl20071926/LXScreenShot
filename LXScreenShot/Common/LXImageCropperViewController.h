@@ -7,11 +7,12 @@
 //  图片剪切-身份证
 
 #import "LXViewController.h"
+#import "LXDrawImageView.h"
 
 @interface LXImageCropperViewController : LXViewController
 
 @property (nonatomic, copy) void (^completionHandler)(UIImage *image);
-@property (nonatomic, retain) UIImageView *imageView;
+@property (nonatomic, retain) LXDrawImageView *imageView;
 
 - (id)initWithOriginalImage:(UIImage *)image cropWidth:(float)width cropHeight:(float)vheight;
 

@@ -31,6 +31,9 @@ static const CGFloat kCommonViewSpace = 10.f;
 @property (nonatomic, strong) UIView *rightMaskView;
 @property (nonatomic, strong) UIView *bottomMaskView;
 
+@property (nonatomic, assign) BOOL isPainting;
+@property (nonatomic, strong) LXDrawImageView *drawImageView;
+
 @end
 
 
@@ -55,7 +58,7 @@ static const CGFloat kCommonViewSpace = 10.f;
     return self;
 }
 
-#pragma mark - View lifecycle
+#pragma mark - Life Cycle
 
 - (void)viewDidLoad {
     
@@ -63,6 +66,7 @@ static const CGFloat kCommonViewSpace = 10.f;
     self.view.backgroundColor = [UIColor blackColor];
     [self initSubViews];
     [self resetImageView];
+    self.isPainting = NO;
 }
 
 - (void)initSubViews {
@@ -139,6 +143,7 @@ static const CGFloat kCommonViewSpace = 10.f;
 - (void)resetImageView {
     
     self.scrollView.zoomScale = 1;
+    self.imageView.zoomScale = 1;
     
     if (nil == self.originalImage) return;
     self.navigationItem.rightBarButtonItem.enabled = YES;
@@ -156,8 +161,10 @@ static const CGFloat kCommonViewSpace = 10.f;
     self.scrollView.contentSize = size;
     
     [self.imageView removeFromSuperview];
-    self.imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, size.width, size.height)];
+    self.imageView = [[LXDrawImageView alloc] initWithFrame:CGRectMake(0, 0, size.width, size.height)];
     self.imageView.image = self.originalImage;
+    self.imageView.originImage = self.originalImage;
+    self.imageView.userInteractionEnabled = YES;
     [self.scrollView addSubview:self.imageView];
     
     [self.scrollView scrollRectToVisible:CGRectMake((self.imageView.frame.size.width - cropWidth) / 2, (self.imageView.frame.size.height - cropHeight) / 2, cropWidth, cropHeight) animated:NO];
@@ -177,7 +184,7 @@ static const CGFloat kCommonViewSpace = 10.f;
     rect.size.width = rect.size.width * scale;
     rect.size.height = rect.size.height * scale;
     
-    UIImage *sourceImage = [self rotateImage:self.originalImage orientation:self.imageView.image.imageOrientation];
+    UIImage *sourceImage = [self rotateImage:self.imageView.image orientation:self.imageView.image.imageOrientation];
     
     CGImageRef imageRef = CGImageCreateWithImageInRect(sourceImage.CGImage, rect);
     UIImage *cropImage = [UIImage imageWithCGImage:imageRef];
@@ -264,6 +271,36 @@ static const CGFloat kCommonViewSpace = 10.f;
     return imageCopy;
 }
 
+#pragma mark - UIScrollViewDelegate
+
+- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
+    
+    return self.imageView;
+}
+
+#pragma mark - LXToolViewDelegate
+
+- (void)toolView:(LXToolView *)toolView didClickToolButton:(UIButton *)toolButton {
+    
+    self.isPainting = toolButton.selected;
+    if (toolButton.selected) {
+        self.imageView.zoomScale = self.scrollView.zoomScale;
+        self.imageView.type = toolButton.tag;
+    }
+}
+
+#pragma mark - Event Response
+
+- (void)onCancelButtonClick {
+    
+    self.completionHandler(nil);
+}
+
+- (void)onDoneButtonClick {
+    
+    [self cropImage];
+}
+
 - (void)onRotationButtonClick {
     
     UIImage *rotationImage;
@@ -289,35 +326,14 @@ static const CGFloat kCommonViewSpace = 10.f;
     [self resetImageView];
 }
 
-#pragma mark - UIScrollViewDelegate
+#pragma mark - Setter
 
-- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
+- (void)setIsPainting:(BOOL)isPainting {
     
-    return self.imageView;
-}
-
-#pragma mark - LXToolViewDelegate
-
-- (void)toolView:(LXToolView *)toolView didClickToolButton:(UIButton *)toolButton {
-    
-    self.scrollView.userInteractionEnabled = !toolButton.selected;
-
-    if (toolButton.selected) {
-        
-        
-    }
-}
-
-#pragma mark - Event Response
-
-- (void)onCancelButtonClick {
-    
-    self.completionHandler(nil);
-}
-
-- (void)onDoneButtonClick {
-    
-    [self cropImage];
+    _isPainting = isPainting;
+    self.imageView.userInteractionEnabled = isPainting;
+    self.scrollView.scrollEnabled = !isPainting;
+    self.scrollView.directionalLockEnabled = !isPainting;
 }
 
 #pragma mark - Getters
