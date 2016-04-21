@@ -36,11 +36,6 @@ static const CGFloat kViewSpace = 20.f;
     [self addSubViews];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
 #pragma mark - Custome Method
 
 - (void)addSubViews {
@@ -99,7 +94,7 @@ static const CGFloat kViewSpace = 20.f;
     [self showImagePickerControllerWithSourceType:UIImagePickerControllerSourceTypeCamera cameraType:LXCameraOverlayViewTypeIdentify];
 }
 
-#pragma mark - Getter
+#pragma mark - Getters
 
 - (UIImageView *)backgroundImageView {
     

@@ -10,8 +10,7 @@
 #import "LXImagePickerControllerViewController.h"
 #import "LXToolView.h"
 
-static const CGFloat kBottomSpace = 20.f;
-static const CGFloat kCommonViewSpace = 10.f;
+static const CGFloat kCommonViewSpace = 20.f;
 
 @interface LXImageCropperViewController () <UIScrollViewDelegate,LXToolViewDelegate>
 {
@@ -19,11 +18,13 @@ static const CGFloat kCommonViewSpace = 10.f;
 }
 
 @property (nonatomic, retain) UIScrollView *scrollView;
-@property (nonatomic, retain) UIImage *originalImage;
-@property (nonatomic, strong) UIButton *rotationButton;
-@property (nonatomic, strong) UIButton *cancelButton;
-@property (nonatomic, strong) UIButton *doneButton;
+@property (nonatomic, strong) LXDrawImageView *drawImageView;
 @property (nonatomic, strong) LXToolView *toolView;
+@property (nonatomic, retain) UIImage *originalImage; // 原始图片
+@property (nonatomic, strong) UIButton *rotationButton; // 旋转按钮
+@property (nonatomic, strong) UIButton *cancelButton; // 取消按钮
+@property (nonatomic, strong) UIButton *doneButton; // 完成按钮
+@property (nonatomic, strong) UIButton *restButton; // 还原按钮
 // 蒙层
 @property (nonatomic, strong) UIView *topMaskView;
 @property (nonatomic, strong) UIView *leftMaskView;
@@ -32,12 +33,12 @@ static const CGFloat kCommonViewSpace = 10.f;
 @property (nonatomic, strong) UIView *bottomMaskView;
 
 @property (nonatomic, assign) BOOL isPainting;
-@property (nonatomic, strong) LXDrawImageView *drawImageView;
 
 @end
 
-
 @implementation LXImageCropperViewController
+
+#pragma mark - Life Cycle
 
 - (void)dealloc {
     
@@ -58,8 +59,6 @@ static const CGFloat kCommonViewSpace = 10.f;
     return self;
 }
 
-#pragma mark - Life Cycle
-
 - (void)viewDidLoad {
     
     [super viewDidLoad];
@@ -74,40 +73,26 @@ static const CGFloat kCommonViewSpace = 10.f;
     [self initScrollView];
     [self initMaskView];
     
-    self.rotationButton.frame = CGRectMake(0, 0, 80, 50);
-    self.rotationButton.left = (self.view.width - self.rotationButton.width) / 2;
-    self.rotationButton.top = SCREEN_HEIGHT - self.rotationButton.height;
-    [self.view addSubview:self.rotationButton];
-    
-    self.cancelButton.frame = CGRectMake(0, 20, 80.f, 30.f);
-    self.cancelButton.left = kBottomSpace;
+    self.cancelButton.frame = CGRectMake(0, 0, 50.f, 40.f);
+    self.cancelButton.top = SCREEN_HEIGHT - self.cancelButton.height;
+    self.cancelButton.left = kCommonViewSpace;
     [self.view addSubview:self.cancelButton];
     
+    self.rotationButton.frame = self.cancelButton.frame;
+    self.rotationButton.left = self.cancelButton.right + kCommonViewSpace;
+    [self.view addSubview:self.rotationButton];
+    
+    self.restButton.frame = self.cancelButton.frame;
+    self.restButton.left = self.rotationButton.right + kCommonViewSpace;
+    [self.view addSubview:self.restButton];
+    
     self.doneButton.frame = self.cancelButton.frame;
-    self.doneButton.left = (SCREEN_WIDTH - kBottomSpace - self.doneButton.width);
+    self.doneButton.left = self.restButton.right + kCommonViewSpace;
     [self.view addSubview:self.doneButton];
     
     self.toolView.left = 0;
     self.toolView.top = self.bottomMaskView.top + kCommonViewSpace;
     [self.view addSubview:self.toolView];
-}
-
-- (void)initMaskView {
-    
-    self.topMaskView.frame = CGRectMake(0, 0, self.scrollView.frame.size.width, (self.scrollView.frame.size.height - cropHeight) / 2);
-    [self.view addSubview:self.topMaskView];
-    
-    self.leftMaskView.frame = CGRectMake(0, self.topMaskView.origin.y + self.topMaskView.size.height, (self.scrollView.frame.size.width - cropWidth) / 2, cropHeight);
-    [self.view addSubview:self.leftMaskView];
-    
-    self.centerMaskView.frame = CGRectMake(self.leftMaskView.origin.x + self.leftMaskView.size.width, self.leftMaskView.origin.y, cropWidth, cropHeight);;
-    [self.view addSubview:self.centerMaskView];
-    
-    self.rightMaskView.frame = CGRectMake(self.centerMaskView.origin.x + self.centerMaskView.size.width, self.centerMaskView.origin.y, (self.scrollView.frame.size.width - cropWidth) / 2, cropHeight);
-    [self.view addSubview:self.rightMaskView];
-    
-    self.bottomMaskView.frame = CGRectMake(0, self.rightMaskView.origin.y + self.rightMaskView.size.height, self.scrollView.frame.size.width, (self.scrollView.frame.size.height - cropHeight) / 2);
-    [self.view addSubview:self.bottomMaskView];
 }
 
 - (void)initScrollView {
@@ -138,9 +123,27 @@ static const CGFloat kCommonViewSpace = 10.f;
     [self.view addSubview:self.scrollView];
 }
 
+- (void)initMaskView {
+    
+    self.topMaskView.frame = CGRectMake(0, 0, self.scrollView.frame.size.width, (self.scrollView.frame.size.height - cropHeight) / 2);
+    [self.view addSubview:self.topMaskView];
+    
+    self.leftMaskView.frame = CGRectMake(0, self.topMaskView.origin.y + self.topMaskView.size.height, (self.scrollView.frame.size.width - cropWidth) / 2, cropHeight);
+    [self.view addSubview:self.leftMaskView];
+    
+    self.centerMaskView.frame = CGRectMake(self.leftMaskView.origin.x + self.leftMaskView.size.width, self.leftMaskView.origin.y, cropWidth, cropHeight);;
+    [self.view addSubview:self.centerMaskView];
+    
+    self.rightMaskView.frame = CGRectMake(self.centerMaskView.origin.x + self.centerMaskView.size.width, self.centerMaskView.origin.y, (self.scrollView.frame.size.width - cropWidth) / 2, cropHeight);
+    [self.view addSubview:self.rightMaskView];
+    
+    self.bottomMaskView.frame = CGRectMake(0, self.rightMaskView.origin.y + self.rightMaskView.size.height, self.scrollView.frame.size.width, (self.scrollView.frame.size.height - cropHeight) / 2);
+    [self.view addSubview:self.bottomMaskView];
+}
+
 #pragma mark - Custom Methods
 
-- (void)resetImageView {
+- (void)resetImageView { // 重置ImageView
     
     self.scrollView.zoomScale = 1;
     self.imageView.zoomScale = 1;
@@ -157,7 +160,6 @@ static const CGFloat kCommonViewSpace = 10.f;
         size.width = cropWidth;
         size.height = height / width * size.width;
     }
-    
     self.scrollView.contentSize = size;
     
     [self.imageView removeFromSuperview];
@@ -170,7 +172,7 @@ static const CGFloat kCommonViewSpace = 10.f;
     [self.scrollView scrollRectToVisible:CGRectMake((self.imageView.frame.size.width - cropWidth) / 2, (self.imageView.frame.size.height - cropHeight) / 2, cropWidth, cropHeight) animated:NO];
 }
 
-- (void)cropImage {
+- (void)cropImage { // 图片截取
     
     CGRect rect;
     rect.origin.x = self.scrollView.contentInset.left + self.scrollView.contentOffset.x;
@@ -195,7 +197,7 @@ static const CGFloat kCommonViewSpace = 10.f;
     self.completionHandler(cropImage);
 }
 
-- (UIImage *)rotateImage:(UIImage *)aImage orientation:(UIImageOrientation)orient {
+- (UIImage *)rotateImage:(UIImage *)aImage orientation:(UIImageOrientation)orient { // 调整图片方向
     
     CGImageRef imgRef = aImage.CGImage;
     CGFloat width = CGImageGetWidth(imgRef);
@@ -291,23 +293,12 @@ static const CGFloat kCommonViewSpace = 10.f;
 
 #pragma mark - Event Response
 
-- (void)onCancelButtonClick {
-    
-    self.completionHandler(nil);
-}
-
-- (void)onDoneButtonClick {
-    
-    [self cropImage];
-}
-
 - (void)onRotationButtonClick {
     
     UIImage *rotationImage;
     switch (self.imageView.image.imageOrientation) {
         case UIImageOrientationUp:
             rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationRight];
-            
             break;
         case UIImageOrientationRight:
             rotationImage = [UIImage imageWithCGImage:self.originalImage.CGImage scale:1.0 orientation:UIImageOrientationDown];
@@ -321,9 +312,24 @@ static const CGFloat kCommonViewSpace = 10.f;
         default:
             break;
     }
-    
     self.originalImage = rotationImage;
     [self resetImageView];
+}
+
+- (void)onRestButtonClick {
+    
+    self.imageView.image = self.originalImage;
+    self.imageView.originImage = self.originalImage;
+}
+
+- (void)onCancelButtonClick {
+    
+    self.completionHandler(nil);
+}
+
+- (void)onDoneButtonClick {
+    
+    [self cropImage];
 }
 
 #pragma mark - Setter
@@ -349,6 +355,17 @@ static const CGFloat kCommonViewSpace = 10.f;
     return _rotationButton;
 }
 
+- (UIButton *)restButton {
+    
+    if (!_restButton) {
+        _restButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [_restButton setTitle:@"还原" forState:UIControlStateNormal];
+        [_restButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [_restButton addTarget:self action:@selector(onRestButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _restButton;
+}
+
 - (UIButton *)cancelButton {
     
     if (!_cancelButton) {
@@ -364,7 +381,7 @@ static const CGFloat kCommonViewSpace = 10.f;
     
     if (!_doneButton) {
         _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_doneButton setTitle:@"使用照片" forState:UIControlStateNormal];
+        [_doneButton setTitle:@"保存" forState:UIControlStateNormal];
         [_doneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [_doneButton addTarget:self action:@selector(onDoneButtonClick) forControlEvents:UIControlEventTouchUpInside];
     }

@@ -16,6 +16,7 @@
 @property (nonatomic, assign) LXToolButtonType type;
 
 @property (nonatomic, strong) UIColor *color;
+@property (nonatomic, strong) UIFont *textFont;
 @property (nonatomic, assign) CGFloat lineWidth;
 
 @end
