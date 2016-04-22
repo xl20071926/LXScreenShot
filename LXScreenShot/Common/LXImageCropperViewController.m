@@ -166,7 +166,7 @@ static const CGFloat kCommonViewSpace = 20.f;
     self.imageView = [[LXDrawImageView alloc] initWithFrame:CGRectMake(0, 0, size.width, size.height)];
     self.imageView.image = self.originalImage;
     self.imageView.originImage = self.originalImage;
-    self.imageView.userInteractionEnabled = YES;
+    self.imageView.canDrawRect = [self.view convertRect:self.centerMaskView.frame toView:SCREEN_KEY_WINDOW];
     [self.scrollView addSubview:self.imageView];
     
     [self.scrollView scrollRectToVisible:CGRectMake((self.imageView.frame.size.width - cropWidth) / 2, (self.imageView.frame.size.height - cropHeight) / 2, cropWidth, cropHeight) animated:NO];

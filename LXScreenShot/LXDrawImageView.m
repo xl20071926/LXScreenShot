@@ -119,7 +119,7 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
     return arrowPonit;
 }
 
-- (void)addTextView { // 添加textView
+- (void)addTextViewWithPoint:(CGPoint)point { // 添加textView
     
     UITextView *textView = [[UITextView alloc] initWithFrame:CGRectMake(self.startPoint.x, self.startPoint.y, self.textFont.pointSize * 2, self.textFont.lineHeight)];
     textView.backgroundColor = [UIColor clearColor];
@@ -129,8 +129,28 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
     textView.textColor = self.color;
     textView.textAlignment = NSTextAlignmentLeft;
     textView.delegate = self;
+    [textView becomeFirstResponder];
     [self addSubview:textView];
     self.currentTextView = textView;
+    [self scrollWindowWithTouchPoint:point];
+}
+
+- (void)scrollWindowWithTouchPoint:(CGPoint)ponit { // 根据点击屏幕的位置滚动window
+    
+    // 点击点到屏幕底部的高度
+    CGFloat distancePointToBottom = SCREEN_KEY_WINDOW.height - ponit.y;
+    if (distancePointToBottom < 270.f) {
+        [UIView animateWithDuration:0.3 animations:^{
+            SCREEN_KEY_WINDOW.top = - 200.f;
+        }];
+    }
+}
+
+- (BOOL)judgeTouchPonitCanDraw:(CGPoint)point {
+    
+    BOOL canDraw = CGRectContainsPoint(self.canDrawRect, point);
+
+    return canDraw;
 }
 
 #pragma mark - Draw Image Methods
@@ -220,6 +240,7 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
                     withAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:self.currentTextView.font.pointSize * self.imageScale],
                                      NSForegroundColorAttributeName:self.color}];
     self.image = UIGraphicsGetImageFromCurrentImageContext();
+    self.originImage = self.image;
     [self.currentTextView removeFromSuperview];
     self.currentTextView = nil;
 }
@@ -229,6 +250,10 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     
     UITouch *touch = [[touches allObjects] firstObject];
+    CGPoint windowPoint = [touch locationInView:SCREEN_KEY_WINDOW];
+    if (![self judgeTouchPonitCanDraw:windowPoint]) {
+        return;
+    }
     self.startPoint = [touch locationInView:self];
     self.movePoint = self.startPoint;
     
@@ -236,7 +261,7 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
         if (self.currentTextView.isFirstResponder) {
             [self.currentTextView resignFirstResponder];
         } else {
-            [self addTextView];
+            [self addTextViewWithPoint:windowPoint];
         }
     }
 }
@@ -245,6 +270,10 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
     
     UITouch *touch = [[touches allObjects] firstObject];
     CGPoint point = [touch locationInView:self];
+    CGPoint windowPoint = [touch locationInView:SCREEN_KEY_WINDOW];
+    if (![self judgeTouchPonitCanDraw:windowPoint] || CGPointEqualToPoint(self.startPoint, CGPointZero)) {
+        return;
+    }
     [self drawImageContextWithPonit:point];
 }
 
@@ -276,6 +305,7 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
         [self.currentTextView removeFromSuperview];
         self.currentTextView = nil;
     }
+    SCREEN_KEY_WINDOW.top = 0;
 }
 
 - (void)textViewDidChange:(UITextView *)textView {
@@ -293,6 +323,14 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
     _zoomScale = zoomScale;
     if (self.image && self) {
         self.imageScale = zoomScale * (self.image.size.width / self.width);
+    }
+}
+
+- (void)setType:(LXToolButtonType)type {
+    
+    _type = type;
+    if (self.currentTextView.isFirstResponder) {
+        [self.currentTextView resignFirstResponder];
     }
 }
 

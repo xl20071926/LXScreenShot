@@ -19,4 +19,6 @@
 @property (nonatomic, strong) UIFont *textFont;
 @property (nonatomic, assign) CGFloat lineWidth;
 
+@property (nonatomic, assign) CGRect canDrawRect; // 可绘图区域(相对于Window的Rect)
+
 @end
