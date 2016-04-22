@@ -165,7 +165,7 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
                                          (point.x - self.startPoint.x) * self.imageScale,
                                          (point.y - self.startPoint.y) * self.imageScale));
     [self.color setStroke];
-    CGContextSetLineWidth(context, self.lineWidth);
+    CGContextSetLineWidth(context, self.lineWidth * (self.image.size.width / self.width));
     CGContextSetLineJoin(context, kCGLineJoinRound);
     CGContextSetLineCap(context, kCGLineCapRound);
     CGContextDrawPath(context, kCGPathStroke);
@@ -183,7 +183,7 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
                                                   (point.x - self.startPoint.x) * self.imageScale,
                                                   (point.y - self.startPoint.y) * self.imageScale));
     [self.color setStroke];
-    CGContextSetLineWidth(context, self.lineWidth);
+    CGContextSetLineWidth(context, self.lineWidth * (self.image.size.width / self.width));
     CGContextSetLineJoin(context, kCGLineJoinRound);
     CGContextSetLineCap(context, kCGLineCapRound);
     CGContextDrawPath(context, kCGPathStroke);
@@ -205,7 +205,7 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
     CGContextMoveToPoint(context, point.x * self.imageScale, point.y * self.imageScale);
     CGContextAddLineToPoint(context, twoPonit.x * self.imageScale, twoPonit.y * self.imageScale);
     [self.color setStroke];
-    CGContextSetLineWidth(context, self.lineWidth);
+    CGContextSetLineWidth(context, self.lineWidth * (self.image.size.width / self.width));
     CGContextSetLineJoin(context, kCGLineJoinRound);
     CGContextSetLineCap(context, kCGLineCapRound);
     CGContextDrawPath(context, kCGPathStroke);
@@ -220,7 +220,7 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
     CGContextMoveToPoint(context, self.movePoint.x * self.imageScale, self.movePoint.y * self.imageScale);
     CGContextAddLineToPoint(context, point.x * self.imageScale, point.y * self.imageScale);
     [self.color setStroke];
-    CGContextSetLineWidth(context, self.lineWidth);
+    CGContextSetLineWidth(context, self.lineWidth * (self.image.size.width / self.width));
     CGContextSetLineJoin(context, kCGLineJoinRound);
     CGContextSetLineCap(context, kCGLineCapRound);
     CGContextDrawPath(context, kCGPathStroke);

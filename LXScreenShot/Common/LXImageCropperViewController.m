@@ -9,6 +9,7 @@
 #import "LXImageCropperViewController.h"
 #import "LXImagePickerControllerViewController.h"
 #import "LXToolView.h"
+#import <ShareSDK/ShareSDK.h>
 
 static const CGFloat kCommonViewSpace = 20.f;
 
@@ -172,7 +173,7 @@ static const CGFloat kCommonViewSpace = 20.f;
     [self.scrollView scrollRectToVisible:CGRectMake((self.imageView.frame.size.width - cropWidth) / 2, (self.imageView.frame.size.height - cropHeight) / 2, cropWidth, cropHeight) animated:NO];
 }
 
-- (void)cropImage { // 图片截取
+- (UIImage *)cropImage { // 图片截取
     
     CGRect rect;
     rect.origin.x = self.scrollView.contentInset.left + self.scrollView.contentOffset.x;
@@ -191,10 +192,8 @@ static const CGFloat kCommonViewSpace = 20.f;
     CGImageRef imageRef = CGImageCreateWithImageInRect(sourceImage.CGImage, rect);
     UIImage *cropImage = [UIImage imageWithCGImage:imageRef];
     CGImageRelease(imageRef);
-    
-    UIImageWriteToSavedPhotosAlbum(cropImage, nil, nil, nil);
-    
-    self.completionHandler(cropImage);
+
+    return cropImage;
 }
 
 - (UIImage *)rotateImage:(UIImage *)aImage orientation:(UIImageOrientation)orient { // 调整图片方向
@@ -288,7 +287,39 @@ static const CGFloat kCommonViewSpace = 20.f;
     if (toolButton.selected) {
         self.imageView.zoomScale = self.scrollView.zoomScale;
         self.imageView.type = toolButton.tag;
+        if (LXToolButtonTypeShare == toolButton.tag) {
+            [self share];
+        }
     }
+}
+
+#pragma mark - Share Method
+
+- (void)share {
+    
+    UIImage *cropImage = [self cropImage];
+    //构造分享内容
+    id<ISSContent> publishContent = [ShareSDK content:@"分享内容~\(≧▽≦)/~啦啦啦"
+                                       defaultContent:@"测试一下 o(╯□╰)o"
+                                                image:[ShareSDK pngImageWithImage:cropImage]
+                                                title:@"LXScreenShot"
+                                                  url:@"https://github.com/xl20071926/LXScreenShot"
+                                          description:@"~\(≧▽≦)/~啦啦啦"
+                                            mediaType:SSPublishContentMediaTypeNews];
+    //弹出分享菜单
+    [ShareSDK showShareActionSheet:nil
+                         shareList:nil
+                           content:publishContent
+                     statusBarTips:YES
+                       authOptions:nil
+                      shareOptions:nil
+                            result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
+                                if (state == SSResponseStateSuccess) {
+                                    NSLog(@"分享成功");
+                                } else if (state == SSResponseStateFail) {
+                                    NSLog(@"分享失败,错误码:%ld,错误描述:%@", [error errorCode], [error errorDescription]);
+                                }
+                            }];
 }
 
 #pragma mark - Event Response
@@ -329,7 +360,9 @@ static const CGFloat kCommonViewSpace = 20.f;
 
 - (void)onDoneButtonClick {
     
-    [self cropImage];
+    UIImage *cropImage = [self cropImage];
+    UIImageWriteToSavedPhotosAlbum(cropImage, nil, nil, nil);
+    self.completionHandler(cropImage);
 }
 
 #pragma mark - Setter

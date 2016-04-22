@@ -8,6 +8,7 @@
 
 #import "LXToolView.h"
 #import "UIView+Extensions.h"
+#import "LXToolPopView.h"
 
 static const CGFloat kToolButtonSpace = 5.f;
 static const CGFloat kToolButtonWidth = 25.f;
@@ -95,6 +96,8 @@ static const CGFloat kToolButtonHeight = 20.f;
     switch (type) {
         case LXToolButtonTypeRect: {
             NSLog(@"点击矩形");
+            LXToolPopView *popView = [[LXToolPopView alloc] initWithFrame:CGRectMake(0,kToolButtonHeight + 5.f, 150, 23)];
+            [self addSubview:popView];
         }
             break;
         case LXToolButtonTypeCircle: {
@@ -114,7 +117,7 @@ static const CGFloat kToolButtonHeight = 20.f;
         }
             break;
         case LXToolButtonTypeShare: {
-            NSLog(@"点击矩形");
+            NSLog(@"点击分享");
         }
             break;
         default:
