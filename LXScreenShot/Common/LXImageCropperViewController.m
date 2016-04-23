@@ -35,6 +35,8 @@ static const CGFloat kCommonViewSpace = 20.f;
 
 @property (nonatomic, assign) BOOL isPainting;
 
+@property (nonatomic, assign) CGRect centerMaskConvertRect; // 中心区域相对于window的rect
+
 @end
 
 @implementation LXImageCropperViewController
@@ -67,6 +69,14 @@ static const CGFloat kCommonViewSpace = 20.f;
     [self initSubViews];
     [self resetImageView];
     self.isPainting = NO;
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    
+    [super viewDidAppear:animated];
+    // 因iOS7 在页面还未出现的时候坐标转换有问题
+    self.centerMaskConvertRect = [self.view convertRect:self.centerMaskView.frame toView:SCREEN_KEY_WINDOW];
+    self.imageView.canDrawRect = self.centerMaskConvertRect;
 }
 
 - (void)initSubViews {
@@ -162,12 +172,11 @@ static const CGFloat kCommonViewSpace = 20.f;
         size.height = height / width * size.width;
     }
     self.scrollView.contentSize = size;
-    
     [self.imageView removeFromSuperview];
     self.imageView = [[LXDrawImageView alloc] initWithFrame:CGRectMake(0, 0, size.width, size.height)];
     self.imageView.image = self.originalImage;
     self.imageView.originImage = self.originalImage;
-    self.imageView.canDrawRect = [self.view convertRect:self.centerMaskView.frame toView:SCREEN_KEY_WINDOW];
+    self.imageView.canDrawRect = self.centerMaskConvertRect;
     [self.scrollView addSubview:self.imageView];
     
     [self.scrollView scrollRectToVisible:CGRectMake((self.imageView.frame.size.width - cropWidth) / 2, (self.imageView.frame.size.height - cropHeight) / 2, cropWidth, cropHeight) animated:NO];
@@ -305,7 +314,7 @@ static const CGFloat kCommonViewSpace = 20.f;
                                                 title:@"LXScreenShot"
                                                   url:@"https://github.com/xl20071926/LXScreenShot"
                                           description:@"~\(≧▽≦)/~啦啦啦"
-                                            mediaType:SSPublishContentMediaTypeNews];
+                                            mediaType:SSPublishContentMediaTypeImage];
     //弹出分享菜单
     [ShareSDK showShareActionSheet:nil
                          shareList:nil
@@ -317,7 +326,7 @@ static const CGFloat kCommonViewSpace = 20.f;
                                 if (state == SSResponseStateSuccess) {
                                     NSLog(@"分享成功");
                                 } else if (state == SSResponseStateFail) {
-                                    NSLog(@"分享失败,错误码:%ld,错误描述:%@", [error errorCode], [error errorDescription]);
+                                    NSLog(@"分享失败,错误码:%d,错误描述:%@", [error errorCode], [error errorDescription]);
                                 }
                             }];
 }
