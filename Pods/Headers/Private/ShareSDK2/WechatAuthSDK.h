@@ -1,0 +1,1 @@
+../../../ShareSDK2/ShareSDK/Extend/WeChatSDK/WechatAuthSDK.h

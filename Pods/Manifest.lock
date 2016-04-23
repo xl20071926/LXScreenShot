@@ -1,0 +1,34 @@
+PODS:
+  - MOBFoundation (1.5.1)
+  - ShareSDK2 (2.12.5):
+    - ShareSDK2/Core (= 2.12.5)
+  - ShareSDK2/Connection/QQ (2.12.5):
+    - ShareSDK2/Extend/QQConnectSDK
+  - ShareSDK2/Connection/QZone (2.12.5):
+    - ShareSDK2/Extend/QQConnectSDK
+  - ShareSDK2/Connection/SinaWeibo (2.12.5):
+    - ShareSDK2/Extend/SinaWeiboSDK
+  - ShareSDK2/Connection/SMS (2.12.5)
+  - ShareSDK2/Connection/WeChat (2.12.5):
+    - ShareSDK2/Extend/WeChatSDK
+  - ShareSDK2/Core (2.12.5)
+  - ShareSDK2/Extend/QQConnectSDK (2.12.5)
+  - ShareSDK2/Extend/SinaWeiboSDK (2.12.5)
+  - ShareSDK2/Extend/WeChatSDK (2.12.5)
+  - ShareSDK2/UI/iPhoneDefault (2.12.5)
+
+DEPENDENCIES:
+  - MOBFoundation
+  - ShareSDK2
+  - ShareSDK2/Connection/QQ
+  - ShareSDK2/Connection/QZone
+  - ShareSDK2/Connection/SinaWeibo
+  - ShareSDK2/Connection/SMS
+  - ShareSDK2/Connection/WeChat
+  - ShareSDK2/UI/iPhoneDefault
+
+SPEC CHECKSUMS:
+  MOBFoundation: 79efc94db961fe5a08cf32de69166f6a29a3b2b5
+  ShareSDK2: c076a9ea57d9d87650130b8071f2bcf0f169cb94
+
+COCOAPODS: 0.38.0

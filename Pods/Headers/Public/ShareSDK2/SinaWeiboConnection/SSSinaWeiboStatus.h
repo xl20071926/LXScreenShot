@@ -1,0 +1,1 @@
+../../../../ShareSDK2/ShareSDK/Connection/SinaWeiboConnection.framework/Headers/SSSinaWeiboStatus.h

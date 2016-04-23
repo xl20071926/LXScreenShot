@@ -1,0 +1,1 @@
+../../../../ShareSDK2/ShareSDK/ShareSDK.framework/Headers/ISSPlatformShareInfo.h
