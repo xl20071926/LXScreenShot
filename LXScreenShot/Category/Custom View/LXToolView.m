@@ -8,13 +8,12 @@
 
 #import "LXToolView.h"
 #import "UIView+Extensions.h"
-#import "LXToolPopView.h"
 
 static const CGFloat kToolButtonSpace = 5.f;
 static const CGFloat kToolButtonWidth = 25.f;
 static const CGFloat kToolButtonHeight = 20.f;
 
-@interface LXToolView ()
+@interface LXToolView () <LXToolPopViewDelegate>
 
 @property (nonatomic, strong) UIButton *rectButton;
 @property (nonatomic, strong) UIButton *circleButton;
@@ -22,6 +21,8 @@ static const CGFloat kToolButtonHeight = 20.f;
 @property (nonatomic, strong) UIButton *penButton;
 @property (nonatomic, strong) UIButton *textButton;
 @property (nonatomic, strong) UIButton *shareButton;
+
+@property (nonatomic, strong) LXToolPopView *popView;
 
 @end
 
@@ -36,11 +37,9 @@ static const CGFloat kToolButtonHeight = 20.f;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     
-    self = [super initWithFrame:CGRectMake(frame.origin.x, frame.origin.y, 200.f, kToolButtonHeight)];
+    self = [super initWithFrame:CGRectMake(frame.origin.x, frame.origin.y, 200.f,55.f)];
     if (self) {
         self.backgroundColor = [UIColor clearColor];
-        self.layer.borderWidth = 1.f;
-        self.layer.borderColor = [UIColor grayColor].CGColor;
         self.layer.cornerRadius = 2.f;
         self.layer.masksToBounds = YES;
         [self initSubViews];
@@ -72,56 +71,64 @@ static const CGFloat kToolButtonHeight = 20.f;
     self.shareButton.frame = self.rectButton.frame;
     self.shareButton.left = self.textButton.right + kToolButtonSpace;
     [self addSubview:self.shareButton];
+    
+    [self addSubview:self.popView];
+}
+
+#pragma mark - Custom Method
+
+- (void)showPopViewWithClickedButton:(UIButton *)clickButton { // 弹出PopView
+    
+    if (clickButton.tag == LXToolButtonTypeShare) {
+        [self.popView hidePopView];
+        return;
+    }
+    NSInteger index = clickButton.tag - LXToolButtonTypeRect;
+    CGFloat piontX = index * (kToolButtonWidth + kToolButtonSpace) + kToolButtonWidth / 2;
+    if (piontX < self.popView.width) {
+        [self.popView showPopViewWithArrowPoint:CGPointMake(piontX, 0)];
+    }
+}
+
+- (void)setButtonSelectedWithClickedButton:(UIButton *)clickButton { // 设置所有Button的Selected属性
+    
+    for (NSInteger i = LXToolButtonTypeRect; i < LXToolButtonTypeRect + 6; i++) {
+        UIButton *button = (UIButton *)[self viewWithTag:i];
+        if (i != clickButton.tag) {
+            button.selected = NO;
+        }
+    }
+}
+
+#pragma mark - LXToolPopViewDelegate
+
+- (void)toolPopView:(LXToolPopView *)popView clickedSizeButtonType:(ToolPopViewLineWidthType)type {
+    
+    if ([self.delegate respondsToSelector:@selector(toolView:didSelectLineWith:)]) {
+        [self.delegate toolView:self didSelectLineWith:type];
+    }
+}
+
+- (void)toolPopView:(LXToolPopView *)popView clickedColorButtonWithColor:(UIColor *)color {
+    
+    if ([self.delegate respondsToSelector:@selector(toolView:didSelectColor:)]) {
+        [self.delegate toolView:self didSelectColor:color];
+    }
 }
 
 #pragma mark - Event Response
 
 - (void)onToolButtonClick:(UIButton *)sender {
     
-    LXToolButtonType type = sender.tag;
-    if (!sender.selected) {
-        for (NSInteger i = LXToolButtonTypeRect; i < LXToolButtonTypeRect + 6; i++) {
-            UIButton *button = (UIButton *)[self viewWithTag:i];
-            if (i != type) {
-                button.selected = NO;
-            }
-        }
-    }
     sender.selected = !sender.selected;
-
+    if (sender.selected) {
+        [self showPopViewWithClickedButton:sender];
+        [self setButtonSelectedWithClickedButton:sender];
+    } else {
+        [self.popView hidePopView];
+    }
     if ([self.delegate respondsToSelector:@selector(toolView:didClickToolButton:)]) {
         [self.delegate toolView:self didClickToolButton:sender];
-    }
-    
-    switch (type) {
-        case LXToolButtonTypeRect: {
-            NSLog(@"点击矩形");
-            LXToolPopView *popView = [[LXToolPopView alloc] initWithFrame:CGRectMake(0,kToolButtonHeight + 5.f, 150, 23)];
-            [self addSubview:popView];
-        }
-            break;
-        case LXToolButtonTypeCircle: {
-            NSLog(@"点击圆形");
-        }
-            break;
-        case LXToolButtonTypeArrow: {
-            NSLog(@"点击箭头");
-        }
-            break;
-        case LXToolButtonTypePen: {
-            NSLog(@"点击笔");
-        }
-            break;
-        case LXToolButtonTypeText: {
-            NSLog(@"点击文字");
-        }
-            break;
-        case LXToolButtonTypeShare: {
-            NSLog(@"点击分享");
-        }
-            break;
-        default:
-            break;
     }
 }
 
@@ -175,7 +182,7 @@ static const CGFloat kToolButtonHeight = 20.f;
         _penButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _penButton.tag = LXToolButtonTypePen;
         _penButton.titleLabel.font = [UIFont systemFontOfSize:10.f];
-        [_penButton setTitle:@"笔" forState:UIControlStateNormal];
+        [_penButton setTitle:@"手写" forState:UIControlStateNormal];
         [_penButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [_penButton setTitleColor:[UIColor greenColor] forState:UIControlStateSelected];
         [_penButton addTarget:self action:@selector(onToolButtonClick:) forControlEvents:UIControlEventTouchUpInside];
@@ -209,6 +216,17 @@ static const CGFloat kToolButtonHeight = 20.f;
         [_shareButton addTarget:self action:@selector(onToolButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     }
     return _shareButton;
+}
+
+- (LXToolPopView *)popView {
+    
+    if (!_popView) {
+        _popView = [[LXToolPopView alloc] init];
+        _popView.delegate = self;
+        _popView.left = kToolButtonSpace;
+        _popView.top = kToolButtonHeight + kToolButtonSpace;
+    }
+    return _popView;
 }
 
 @end

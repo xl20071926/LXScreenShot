@@ -302,6 +302,28 @@ static const CGFloat kCommonViewSpace = 20.f;
     }
 }
 
+- (void)toolView:(LXToolView *)toolView didSelectLineWith:(ToolPopViewLineWidthType)type {
+    
+    switch (type) {
+        case ToolPopViewLineWidthTypeSmall:
+            self.imageView.lineWidth = 2;
+            break;
+        case ToolPopViewLineWidthTypeMid:
+            self.imageView.lineWidth = 4;
+            break;
+        case ToolPopViewLineWidthTypeBig:
+            self.imageView.lineWidth = 6;
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)toolView:(LXToolView *)toolView didSelectColor:(UIColor *)color {
+    
+    self.imageView.color = color;
+}
+
 #pragma mark - Share Method
 
 - (void)share {
@@ -326,7 +348,7 @@ static const CGFloat kCommonViewSpace = 20.f;
                                 if (state == SSResponseStateSuccess) {
                                     NSLog(@"分享成功");
                                 } else if (state == SSResponseStateFail) {
-                                    NSLog(@"分享失败,错误码:%d,错误描述:%@", [error errorCode], [error errorDescription]);
+                                    NSLog(@"分享失败,错误码:%ld,错误描述:%@", (long)[error errorCode], [error errorDescription]);
                                 }
                             }];
 }

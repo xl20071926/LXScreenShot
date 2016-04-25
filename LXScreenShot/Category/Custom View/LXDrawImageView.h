@@ -4,7 +4,7 @@
 //
 //  Created by Leexin on 16/4/19.
 //  Copyright © 2016年 Garden.Lee. All rights reserved.
-//
+//  可绘图的UIImage
 
 #import <UIKit/UIKit.h>
 #import "LXToolView.h"
