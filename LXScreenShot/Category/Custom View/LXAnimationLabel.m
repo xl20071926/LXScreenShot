@@ -124,7 +124,7 @@ static const CGFloat kLayerDorpHeight = 100.f;
             
             CAAnimationGroup *animationGroup = [CAAnimationGroup animation];
             animationGroup.animations = @[opacityAnimation, positionAnimation, transformAnimation];
-            animationGroup.duration = 1.0 - delay / 1000;
+            animationGroup.duration = 1.2 - delay / 1000;
             animationGroup.removedOnCompletion = NO;
             animationGroup.fillMode = kCAFillModeForwards;
             
