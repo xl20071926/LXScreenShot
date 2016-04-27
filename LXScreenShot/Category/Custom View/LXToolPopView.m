@@ -27,7 +27,7 @@ static const CGFloat kToolPopViewWidth = 150.f;
 
 @property (nonatomic, strong) UIView *contentView;
 @property (nonatomic, retain) NSArray *colorArray;
-@property (nonatomic, copy) void (^completeBlock)(UIColor *color);
+@property (nonatomic, copy) void (^completionHandler)(UIColor *color);
 
 - (instancetype)initWithColorArray:(NSArray *)colorArray;
 - (void)showColorSelectViewWithLocation:(CGPoint)point;
@@ -37,6 +37,11 @@ static const CGFloat kToolPopViewWidth = 150.f;
 @implementation LXColorSelectView
 
 #pragma mark - Life Cycle
+
+- (void)dealloc {
+    
+    NSLog(@"dealloc LXColorSelectView");
+}
 
 - (instancetype)initWithColorArray:(NSArray *)colorArray {
     
@@ -95,7 +100,7 @@ static const CGFloat kToolPopViewWidth = 150.f;
     NSInteger index = sender.tag - kColorButtonTag;
     UIColor *color = [self.colorArray safeObjectAtIndex:index];
     [self hideColorSelectView];
-    self.completeBlock(color);
+    self.completionHandler(color);
 }
 
 - (void)onScreenClick {
@@ -139,6 +144,11 @@ static const CGFloat kToolPopViewWidth = 150.f;
 
 #pragma mark - Life Cycle
 
+- (void)dealloc {
+    
+    NSLog(@"dealloc LXToolPopView");
+}
+
 - (instancetype)init {
     
     return [self initWithFrame:CGRectMake(0, 0, kToolPopViewWidth, kToolPopViewHeight)];
@@ -179,7 +189,7 @@ static const CGFloat kToolPopViewWidth = 150.f;
                                                                            [UIColor colorWithHex:0x080808],
                                                                            [UIColor colorWithHex:0xFFFFFF]]];
     __weak typeof(self)weakSelf = self;
-    self.colorSelectView.completeBlock = ^(UIColor *color) {
+    self.colorSelectView.completionHandler = ^(UIColor *color) {
         
         [weakSelf.colorButton setImage:[UIImage imageWithColor:color size:weakSelf.colorButton.size]
                               forState:UIControlStateNormal];
@@ -272,7 +282,6 @@ static const CGFloat kToolPopViewWidth = 150.f;
         _smallSizeButton.tag = ToolPopViewLineWidthTypeSmall;
         _smallSizeButton.contentMode = UIViewContentModeScaleAspectFit;
         [_smallSizeButton setImage:[UIImage imageNamed:@"black_dot_6"] forState:UIControlStateNormal];
-//        [_smallSizeButton setImage:[UIImage imageNamed:@""] forState:UIControlStateSelected];
         [_smallSizeButton addTarget:self action:@selector(onSizeButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     }
     return _smallSizeButton;
@@ -285,7 +294,6 @@ static const CGFloat kToolPopViewWidth = 150.f;
         _midSizeButton.tag = ToolPopViewLineWidthTypeMid;
         _midSizeButton.contentMode = UIViewContentModeScaleAspectFit;
         [_midSizeButton setImage:[UIImage imageNamed:@"black_dot_8"] forState:UIControlStateNormal];
-//        [_midSizeButton setImage:[UIImage imageNamed:@""] forState:UIControlStateSelected];
         [_midSizeButton addTarget:self action:@selector(onSizeButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     }
     return _midSizeButton;
@@ -298,7 +306,6 @@ static const CGFloat kToolPopViewWidth = 150.f;
         _bigSizeButton.tag = ToolPopViewLineWidthTypeBig;
         _bigSizeButton.contentMode = UIViewContentModeScaleAspectFit;
         [_bigSizeButton setImage:[UIImage imageNamed:@"black_dot_10"] forState:UIControlStateNormal];
-//        [_bigSizeButton setImage:[UIImage imageNamed:@""] forState:UIControlStateSelected];
         [_bigSizeButton addTarget:self action:@selector(onSizeButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     }
     return _bigSizeButton;

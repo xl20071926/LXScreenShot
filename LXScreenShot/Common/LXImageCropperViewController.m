@@ -7,7 +7,7 @@
 //
 
 #import "LXImageCropperViewController.h"
-#import "LXImagePickerControllerViewController.h"
+#import "LXImagePickerViewController.h"
 #import "LXToolView.h"
 #import <ShareSDK/ShareSDK.h>
 
@@ -44,7 +44,8 @@ static const CGFloat kCommonViewSpace = 20.f;
 #pragma mark - Life Cycle
 
 - (void)dealloc {
-    
+        
+    NSLog(@"dealloc LXImageCropperViewController");
     self.scrollView = nil;
     self.originalImage = nil;
     self.imageView = nil;
@@ -84,7 +85,7 @@ static const CGFloat kCommonViewSpace = 20.f;
     [self initScrollView];
     [self initMaskView];
     
-    self.cancelButton.frame = CGRectMake(0, 0, 50.f, 40.f);
+    self.cancelButton.frame = CGRectMake(0, 0, 60.f, 40.f);
     self.cancelButton.top = SCREEN_HEIGHT - self.cancelButton.height;
     self.cancelButton.left = kCommonViewSpace;
     [self.view addSubview:self.cancelButton];

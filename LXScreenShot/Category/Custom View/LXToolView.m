@@ -30,6 +30,11 @@ static const CGFloat kToolButtonHeight = 20.f;
 
 #pragma mark - Life Cycle
 
+- (void)dealloc {
+    
+    NSLog(@"dealloc LXToolView");
+}
+
 - (instancetype)init {
     
     return [self initWithFrame:CGRectZero];

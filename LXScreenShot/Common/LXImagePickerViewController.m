@@ -6,7 +6,7 @@
 //  Copyright © 2016年 Garden.Lee. All rights reserved.
 //
 
-#import "LXImagePickerControllerViewController.h"
+#import "LXImagePickerViewController.h"
 #import "LXImageCropperViewController.h"
 
 static const CGFloat kOverlayViewSpace = 10.f;
@@ -38,6 +38,11 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 @implementation LXCameraOverlayView
 
 #pragma mark - Life Cycle
+
+- (void)dealloc {
+    
+    NSLog(@"dealloc LXCameraOverlayView");
+}
 
 - (instancetype)initWithOverlayViewType:(LXCameraOverlayViewType)type {
     
@@ -252,20 +257,20 @@ static const CGFloat kAreaImageViewSpace = 5.f;
 @end
 
 
-@interface LXImagePickerControllerViewController ()
+@interface LXImagePickerViewController ()
 
 @property (nonatomic, strong) UIImagePickerController *pickerController;
 @property (nonatomic, strong) UIViewController *presentViewController;
 
 @end
 
-@implementation LXImagePickerControllerViewController
+@implementation LXImagePickerViewController
 
 #pragma mark - Life Cycle
 
 - (void)dealloc {
 
-    NSLog(@"dealloc");
+    NSLog(@"dealloc LXImagePickerViewController");
 }
 
 - (instancetype)initWithController:(UIViewController *)control sourceType:(UIImagePickerControllerSourceType)sourceType cameraType:(LXCameraOverlayViewType)cameraType {
@@ -276,6 +281,15 @@ static const CGFloat kAreaImageViewSpace = 5.f;
         self.cameraType = cameraType;
         self.pickerController = [[UIImagePickerController alloc] init];
         self.pickerController.delegate = self;
+        if (![UIImagePickerController isSourceTypeAvailable:self.sourceType]) {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Tips"
+                                                                message:@"SourceType is Unavailable"
+                                                               delegate:nil
+                                                      cancelButtonTitle:@"OK"
+                                                      otherButtonTitles:nil];
+            [alertView show];
+            return nil;
+        }
         self.pickerController.sourceType = self.sourceType;
         self.presentViewController = control;
     }

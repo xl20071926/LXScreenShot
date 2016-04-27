@@ -25,6 +25,11 @@ static const CGFloat kArrowSize = 10.f; // 箭头的大小
 
 #pragma mark - Life Cycle
 
+- (void)dealloc {
+    
+    NSLog(@"dealloc LXDrawImageView");
+}
+
 - (instancetype)initWithFrame:(CGRect)frame {
     
     self = [super initWithFrame:frame];
